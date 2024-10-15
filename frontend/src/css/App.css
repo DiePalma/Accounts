@@ -1,0 +1,62 @@
+.App {
+  display: block;
+  text-align: center;
+  align-items: center;
+  background-color: white;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+.UpperBar{
+  background-color: #4286E0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+body{
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.App-header {
+  background-color: #e09c42;
+  min-height: 10vh;
+  display: flex;
+  width: 100%;
+  flex-direction: row; 
+  align-items: center;
+  justify-content:  center;
+  
+  font-size: calc(10px + 2vmin);
+  color: rgb(0, 0, 0);
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+html{
+  overflow-x: hidden;
+  width: 100vw;
+}
+*{
+  box-sizing: border-box;
+   /* outline: 1px solid red; */
+}
+
+
+
+/*Aquí se implementará un toggle dark mode*/
+/* .SwitchLight{
+  
+ position:absolute;
+ right: 20px;
+} */

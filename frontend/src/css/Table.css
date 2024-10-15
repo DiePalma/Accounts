@@ -1,0 +1,22 @@
+.table-container {
+  overflow-x:auto;
+  width: 100%;
+  display: block;
+  white-space: nowrap;
+ 
+}
+.table-wrapper{
+  display:inline-block;
+  
+}
+table{
+  margin: 0 auto;
+  border-collapse: collapse;
+
+  display: inline-table;
+}
+th, td{
+  padding:6px;
+  border: 1px solid #ccc;
+  text-align: center;
+}
