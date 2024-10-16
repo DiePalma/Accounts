@@ -1,5 +1,5 @@
 # Accounts
-Simple REST API used to manage email accounts and registrations in web services.
+Simple REST API used to manage email accounts and registrations in web services.  
 This REST API can:
 - Add and save email accounts and web platforms to a database.
 - Create relationships between email accounts and web platforms.
