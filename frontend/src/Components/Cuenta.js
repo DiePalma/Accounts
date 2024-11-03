@@ -2,15 +2,17 @@ import '../css/Table.css';
 import '../css/Button.css';
 import React, { useEffect, useState } from "react";
 import ModalCuenta from "../Modals/ModalCuenta";
-import apiCuenta, { deleteCuenta } from "../Api/ApiCuenta";
+import { deleteCuenta, fetchCuentas } from "../Api/ApiCuenta";
 
 
 export default function Cuenta() {
 const [cuentas, setCuentas] = useState([]);
-
+const [page, setPage]= useState(0);
+const [totalPages, setTotalPages]= useState(0);
 const [showModal, setShowModal] = useState(false);
 const [contenido, setContenido] =useState(null);
 const [opcion, setOpcion] = useState('');
+const pageSize=2;
 
 
 
@@ -28,10 +30,11 @@ const [opcion, setOpcion] = useState('');
 
 
 
-    const getCuentas= async()=>{
+    const getCuentas= async(page)=>{
       try{
-        const response = await apiCuenta.get("");
-        setCuentas(response.data);
+        const data = await fetchCuentas(page, pageSize);
+        setCuentas(data.content);
+        setTotalPages(data.totalPages)
         
       }catch(error){
         console.error('Error obteniendo cuentas', error)
@@ -40,8 +43,8 @@ const [opcion, setOpcion] = useState('');
 
 
   useEffect(()=>{
-    getCuentas();
-  }, []);
+    getCuentas(page);
+  }, [page]);
 
   const handleDelete = async (id) =>{
     try {
@@ -54,6 +57,17 @@ const [opcion, setOpcion] = useState('');
     }
   }
 
+  const handlePreviousPage = () => {
+    if (page > 0) {
+        setPage(page - 1);
+    }
+};
+
+const handleNextPage = () => {
+    if (page < totalPages - 1) {
+        setPage(page + 1);
+    }
+};
  
     
   if (!cuentas) return null;
@@ -92,6 +106,10 @@ const [opcion, setOpcion] = useState('');
           })}
         </tbody>
       </table>
+      <br/>
+      <button onClick={handlePreviousPage} disabled={page === 0}>Anterior</button>
+      <button onClick={handleNextPage} disabled={page===totalPages-1}>Siguiente</button>
+      
       </div>
       </div>
       <ModalCuenta isOpen={showModal} onClose={closeModal} content={contenido} caso={opcion} onDelete={handleDelete} cuentas={cuentas} setCuentas={setCuentas} getCuentas={getCuentas}/>

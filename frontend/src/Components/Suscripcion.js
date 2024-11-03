@@ -1,13 +1,18 @@
 import { useEffect, useState } from "react";
 
 import ModalSuscripcion from "../Modals/ModalSuscripcion";
-import apiRegistro, { updateEstado } from "../Api/ApiRegistro";
+import {
+  fetchSuscripciones,
+  updateEstado,
+} from "../Api/ApiRegistro";
 import apiTipoCuenta from "../Api/ApiTipoCuenta";
 import apiCuenta from "../Api/ApiCuenta";
 import "../css/Table.css";
 
 export default function Suscripcion() {
   const [suscripciones, setSuscripciones] = useState([]);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const [contenido, setContenido] = useState(null);
   const [opcion, setOpcion] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -16,7 +21,8 @@ export default function Suscripcion() {
   const [tipoCuentaSeleccionado, setTipoCuentaSeleccionado] = useState("");
   const [suscripcionesFiltradas, setSuscripcionesFiltradas] = useState([]);
   const [cuentas, setCuentas] = useState([]);
-  
+  const pageSize = 2;
+
   const openModal = (suscripcion, opcion) => {
     setContenido(suscripcion);
     setShowModal(true);
@@ -28,7 +34,7 @@ export default function Suscripcion() {
     setContenido(null);
   };
 
-  const getTiposCuenta = async () => {
+  const getTiposCuenta = async (page) => {
     try {
       const response = await apiTipoCuenta.get("");
 
@@ -53,19 +59,20 @@ export default function Suscripcion() {
   useEffect(() => {
     getCuentas();
   }, []);
-  const getSuscripciones = async () => {
+  const getSuscripciones = async (page) => {
     try {
-      const response = await apiRegistro.get("");
+      const data = await fetchSuscripciones(page, pageSize);
 
-      setSuscripciones(response.data);
-      setSuscripcionesFiltradas(response.data);
+      setSuscripciones(data.content);
+      setSuscripcionesFiltradas(data.content);
+      setTotalPages(data.totalPages);
     } catch (error) {
       console.error("Error obteniendo suscripciones", error);
     }
   };
   useEffect(() => {
-    getSuscripciones();
-  }, []);
+    getSuscripciones(page);
+  }, [page]);
 
   const handleEstadoChange = (event) => {
     setEstadoSeleccionado(event.target.value);
@@ -74,14 +81,14 @@ export default function Suscripcion() {
   const handleTipoCuentaChange = (event) => {
     setTipoCuentaSeleccionado(event.target.value);
   };
-  const handleEstadoUpdate =async (event, suscripcion)=>{
+  const handleEstadoUpdate = async (event, suscripcion) => {
     event.preventDefault();
 
-    const cambio=event.target.value;
+    const cambio = event.target.value;
 
-     await updateEstado(suscripcion.id, cambio);
-     getSuscripciones();
-  }
+    await updateEstado(suscripcion.id, cambio);
+    getSuscripciones();
+  };
 
   useEffect(() => {
     let filtrado = suscripciones;
@@ -99,85 +106,118 @@ export default function Suscripcion() {
     setSuscripcionesFiltradas(filtrado);
   }, [estadoSeleccionado, tipoCuentaSeleccionado, suscripciones]);
 
+  const handlePreviousPage = () => {
+    if (page > 0) {
+      setPage(page - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (page < totalPages - 1) {
+      setPage(page + 1);
+    }
+  };
+
   if (!suscripciones) return null;
   return (
     <div>
       <h2>Estado de cuentas registradas</h2>
-      <button className="add" onClick={() => openModal([], "nuevo")}>Nueva</button>
+      <button className="add" onClick={() => openModal([], "nuevo")}>
+        Nueva
+      </button>
       {suscripcionesFiltradas.length > 0 ? (
-        <div className="table-container" >
-        <div className="table-wrapper">
-        <table border="1">
-          <thead>
-            <tr>
-              {/* <th>id</th> */}
-              <th>Cuenta</th>
-              <th>
-                Tipo
-                <br />
-                {
-                  <select id="tipos" onChange={handleTipoCuentaChange}>
-                    <option value="">Cualquiera</option>
-                    {tiposCuenta.map((tipo) => (
-                      <option key={tipo.id} value={tipo.nombre}>
-                        {tipo.nombre}
-                      </option>
-                    ))}
-                  </select>
-                }
-              </th>
-              <th>
-                Estado
-                <br />
-                <select id="estados" onChange={handleEstadoChange}>
-                  <option value="">Cualquiera</option>
-                  <option value="Disponible">Disponible</option>
-                  <option value="En uso">En uso</option>
-                  <option value="Bloqueada">Bloqueada</option>
-                </select>
-              </th>
-              <th>Cambiar<br/>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {suscripcionesFiltradas.map((suscripcion) => {
-              return (
-                <tr key={suscripcion.id}>
-                  {/* <td>{suscripcion.id}</td> */}
-                  <td>{suscripcion.cuenta.correo}</td>
-                  <td>{suscripcion.tipoCuenta.nombre}</td>
-                  <td>{suscripcion.estado}</td>
-                  <td>
-                  <select id="estados" 
-                  onChange={(e)=>{
-                    if (!(e.target.value==="Seleccione")) {
-                      handleEstadoUpdate(e, suscripcion);
+        <div className="table-container">
+          <div className="table-wrapper">
+            <table border="1">
+              <thead>
+                <tr>
+                  {/* <th>id</th> */}
+                  <th>Cuenta</th>
+                  <th>
+                    Tipo
+                    <br />
+                    {
+                      <select id="tipos" onChange={handleTipoCuentaChange}>
+                        <option value="">Cualquiera</option>
+                        {tiposCuenta.content.map((tipo) => (
+                          <option key={tipo.id} value={tipo.nombre}>
+                            {tipo.nombre}
+                          </option>
+                        ))}
+                      </select>
                     }
-                  } 
-                  }
-                  /*onChange={(e)=>handleEstadoUpdate(e, suscripcion)}*/>
-                  <option value="Seleccione">Seleccione</option>
-                  <option value="Disponible">Disponible</option>
-                  <option value="En uso">En uso</option>
-                  <option value="Bloqueada">Bloqueada</option>
-                </select>
-                    </td>
+                  </th>
+                  <th>
+                    Estado
+                    <br />
+                    <select id="estados" onChange={handleEstadoChange}>
+                      <option value="">Cualquiera</option>
+                      <option value="Disponible">Disponible</option>
+                      <option value="En uso">En uso</option>
+                      <option value="Bloqueada">Bloqueada</option>
+                    </select>
+                  </th>
+                  <th>
+                    Cambiar
+                    <br />
+                    Estado
+                  </th>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        </div>
+              </thead>
+              <tbody>
+                {suscripcionesFiltradas.map((suscripcion) => {
+                  return (
+                    <tr key={suscripcion.id}>
+                      {/* <td>{suscripcion.id}</td> */}
+                      <td>{suscripcion.cuenta.correo}</td>
+                      <td>{suscripcion.tipoCuenta.nombre}</td>
+                      <td>{suscripcion.estado}</td>
+                      <td>
+                        <select
+                          id="estados"
+                          onChange={(e) => {
+                            if (!(e.target.value === "Seleccione")) {
+                              handleEstadoUpdate(e, suscripcion);
+                            }
+                          }}
+                          /*onChange={(e)=>handleEstadoUpdate(e, suscripcion)}*/
+                        >
+                          <option value="Seleccione">Seleccione</option>
+                          <option value="Disponible">Disponible</option>
+                          <option value="En uso">En uso</option>
+                          <option value="Bloqueada">Bloqueada</option>
+                        </select>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            <br />
+            <button onClick={handlePreviousPage} disabled={page === 0}>
+              Anterior
+            </button>
+            <button onClick={handleNextPage} disabled={page === totalPages - 1}>
+              Siguiente
+            </button>
+          </div>
         </div>
       ) : (
         <p>
           No se encontraron suscripciones que coincidan con los criterios
           solicitados.
-         <br/><button className="Button" style={{background:"#FFFFFF"}}onClick={handleEstadoChange} value={""}>Refrescar</button>
+          <br />
+          <button
+            className="Button"
+            style={{ background: "#FFFFFF" }}
+            onClick={handleEstadoChange}
+            value={""}
+          >
+            Refrescar
+          </button>
         </p>
-        
       )}
-      
+
       <ModalSuscripcion
         isOpen={showModal}
         onClose={closeModal}

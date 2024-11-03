@@ -1,8 +1,12 @@
 package com.demo.accounts.controller;
 
-import java.util.List;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,28 +24,34 @@ import com.demo.accounts.service.SuscripcionService;
 @RestController
 @RequestMapping("/suscripcion")
 public class SuscripcionController {
-	
+
 	@Autowired
 	private SuscripcionRepository suscripcionRepository;
-	
+
 	@Autowired
 	private SuscripcionService suscripcionService;
-	
+
 	@GetMapping("")
-	public List<Suscripcion> getSuscripciones(){
-		return suscripcionRepository.findAll();
+	public ResponseEntity<Page<Suscripcion>> getSuscripciones(Pageable pageable) {
+		Page<Suscripcion> suscripciones = suscripcionService.listSuscripciones(pageable);
+		if (suscripciones.isEmpty()) {
+			return ResponseEntity.noContent().build();
+		}
+		return ResponseEntity.ok(suscripciones);
 	}
-	
+
 	@PostMapping("/nueva")
-	public Suscripcion createSuscripcion(@RequestBody Suscripcion suscripcion) {
+	public ResponseEntity <Suscripcion> createSuscripcion(@RequestBody Suscripcion suscripcion) {
 		System.out.println(suscripcion.getCuenta());
 		System.out.println(suscripcion.getTipoCuenta());
-		return suscripcionRepository.save(suscripcion);
+		 suscripcionRepository.save(suscripcion);
+		 return new ResponseEntity<Suscripcion>(HttpStatus.CREATED);
 	}
-	 @PutMapping("/actualizarEstado/{suscripcion_id}/{estado}")
-	    public int updateSubscription(@PathVariable Long suscripcion_id,
-	    		@PathVariable String estado) {
-		
-	    	return suscripcionService.updateEstado(suscripcion_id, estado);
-	    }
+
+	@PutMapping("/actualizarEstado/{suscripcion_id}/{estado}")
+	public ResponseEntity<Integer> updateSubscription(@PathVariable Long suscripcion_id, @PathVariable String estado) {
+
+		suscripcionService.updateEstado(suscripcion_id, estado);
+		return new ResponseEntity<Integer>(HttpStatus.CREATED);
+	}
 }

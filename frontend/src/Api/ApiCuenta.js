@@ -8,6 +8,20 @@ const apiCuenta = axios.create({
     }
 });
 
+export const fetchCuentas = async(page = 0, pageSize = 5)=>{
+  try {
+    const response = await apiCuenta.get("",{
+      params:{
+        page: page,
+        size: pageSize
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error obteniendo cuentas paginadas ', error);
+    throw error;
+  }
+}
 export const deleteCuenta = async (id) =>{
     try {
         await apiCuenta.delete(`/${id}`);

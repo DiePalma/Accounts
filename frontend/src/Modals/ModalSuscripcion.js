@@ -89,10 +89,10 @@ const ModalSuscripcion = ({
       
     }
     
-    setTipoCuentaElegido(tiposCuenta.find(tiposCuenta=>tiposCuenta.id === idTipoCuentaSeleccionada));
+    setTipoCuentaElegido(tiposCuenta.content.find(tiposCuenta=>tiposCuenta.id === idTipoCuentaSeleccionada));
    const cuentasDeTipo= new Set(filtrado.map((sus)=>sus.cuenta.correo))
    let filtroCuentas= cuentas;
-   filtroCuentas= filtroCuentas.filter(cuenta=> !cuentasDeTipo.has(cuenta.correo))
+   filtroCuentas= filtroCuentas.content.filter(cuenta=> !cuentasDeTipo.has(cuenta.correo))
 
     setCuentaFiltrada(filtroCuentas);
 
@@ -101,7 +101,7 @@ const ModalSuscripcion = ({
    
     const idCuentaSeleccionada=Number(e.target.value);
 
-    setCuentaElegida(cuentas.find(cuentas=>cuentas.id===idCuentaSeleccionada));
+    setCuentaElegida(cuentas.content.find(cuentas=>cuentas.id===idCuentaSeleccionada));
     setSelected(false);
   }
   const handleClose =()=>{
@@ -132,7 +132,7 @@ const ModalSuscripcion = ({
                       {
                         <select id="tipos" onChange={handleTipoCuentaElegido} defaultValue={'Seleccione'}>
                           <option value={'Seleccione'}disabled>Seleccione</option>
-                          {tiposCuenta.map((tipo) => (
+                          {tiposCuenta.content.map((tipo) => (
                             <option key={tipo.id} value={tipo.id}>
                               {tipo.nombre}
                             </option>

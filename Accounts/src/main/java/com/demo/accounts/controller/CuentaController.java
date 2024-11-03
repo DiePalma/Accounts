@@ -1,10 +1,13 @@
 package com.demo.accounts.controller;
 
 
-import java.util.List;
 
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,44 +20,59 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.demo.accounts.model.Cuenta;
-import com.demo.accounts.repository.CuentaRepository;
+
+import com.demo.accounts.service.CuentaService;
 @CrossOrigin
 @RestController
 @RequestMapping("/cuenta")
 public class CuentaController {
 	
-	@Autowired
-	private CuentaRepository cuentaRepository;
-	
 
 	
-	public CuentaController (CuentaRepository cuentaRepository) {
-		this.cuentaRepository= cuentaRepository;
+	@Autowired
+	private CuentaService cuentaService;
+	
+	public CuentaController (CuentaService cuentaService) {
+		this.cuentaService=cuentaService;
 	}
 	
 	
 	@GetMapping("")
-	public List<Cuenta> getCuentas(){
-		return cuentaRepository.findAll();
+	public ResponseEntity<Page<Cuenta>> getCuentas(Pageable pageable){
+		Page<Cuenta> cuentas = cuentaService.listCuentas(pageable);
+		if (cuentas.isEmpty()) {
+			return ResponseEntity.noContent().build();
+		}
+		return ResponseEntity.ok(cuentas);
 	}
 	
 	@GetMapping("/{id}")
-	public Cuenta getCuenta(@PathVariable Long id) {
-		return cuentaRepository.findById(id).orElseThrow(RuntimeException::new);
+	public ResponseEntity<Optional<Cuenta>> getCuenta(@PathVariable Long id) {
+		Optional<Cuenta> cuenta= cuentaService.findById(id);
+			if (cuenta!=null) {
+				return ResponseEntity.ok(cuenta);
+			} else {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+			}
 	}
 	@PostMapping("/nueva")
-	public Cuenta createCuenta(@RequestBody Cuenta cuenta) {
-		return cuentaRepository.save(cuenta);
+	public ResponseEntity<Cuenta> createCuenta(@RequestBody Cuenta cuenta) {
+		cuentaService.save(cuenta);
+		return new ResponseEntity<Cuenta>(cuenta, HttpStatus.CREATED);
 	}
 	@PutMapping("/{id}")
-	public Cuenta updateCuenta(@RequestBody Cuenta cuenta, @PathVariable Long id) {
-		return cuentaRepository.findById(id).map(tipo ->{
-			tipo.setCorreo(cuenta.getCorreo());
+	public ResponseEntity<Cuenta> updateCuenta(@RequestBody Cuenta cuentaUpdated, @PathVariable Long id) {
+		return cuentaService.findById(id)
+				.map(cuenta ->{
+			cuenta.setCorreo(cuentaUpdated.getCorreo());
 		
-			return cuentaRepository.save(tipo);
+			 cuentaService.save(cuenta);
+			 return ResponseEntity.ok(cuenta);
 		}).orElseGet(()->{
-			cuenta.setId(id);
-			return cuentaRepository.save(cuenta);
+			cuentaUpdated.setId(id);
+			
+			cuentaService.save(cuentaUpdated);
+			return new ResponseEntity<Cuenta>(cuentaUpdated, HttpStatus.CREATED);
 		});
 	}
 	
@@ -62,7 +80,7 @@ public class CuentaController {
 	
     @DeleteMapping("/{id}")
     public ResponseEntity<Cuenta> deleteCuenta(@PathVariable Long id) {
-        cuentaRepository.deleteById(id);
+        cuentaService.delete(id);
         return ResponseEntity.ok().build();
     }
     

@@ -1,7 +1,9 @@
 package com.demo.accounts.repository;
 
-import java.util.List;
 
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -27,7 +29,7 @@ public interface SuscripcionRepository extends JpaRepository<Suscripcion, Long>{
 			+ "JOIN Suscripcion s ON s.cuenta.id = c.id "
 			+ "JOIN TipoCuenta t ON s.tipoCuenta.id = :tipo_cuenta_id "
 			+ "WHERE s.estado LIKE :estado")
-	List<Cuenta> filtraCuentas(@Param("tipo_cuenta_id") Long tipo_cuenta_id, @Param("estado") String estado);
+	Page<Cuenta> filtraCuentas(@Param("tipo_cuenta_id") Long tipo_cuenta_id, @Param("estado") String estado, Pageable pageable);
 	
 	
 	

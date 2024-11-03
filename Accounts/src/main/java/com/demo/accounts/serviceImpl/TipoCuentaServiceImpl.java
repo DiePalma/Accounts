@@ -1,9 +1,11 @@
 package com.demo.accounts.serviceImpl;
 
 import java.util.List;
-
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,8 +29,8 @@ public class TipoCuentaServiceImpl implements TipoCuentaService{
 	
 	@Override
 	@Transactional(readOnly = true)
-	public List<TipoCuenta> listCuentas() {
-		return (List<TipoCuenta>) tipoCuentaRepository.findAll();
+	public Page<TipoCuenta> listTiposCuenta(Pageable pageable) {
+		return (Page<TipoCuenta>) tipoCuentaRepository.findAll(pageable);
 		
 	}
 	
@@ -53,14 +55,21 @@ public class TipoCuentaServiceImpl implements TipoCuentaService{
 
 	@Override
 	@Transactional(readOnly=true)
-	public TipoCuenta findTipoCuenta(TipoCuenta tipoCuenta) {
-		return tipoCuentaRepository.findById(tipoCuenta.getId()).orElse(null);
+	public Optional<TipoCuenta> findById(Long id) {
+		return tipoCuentaRepository.findById(id);
 		
 	}
 	
 
+
+	@Override
+	public Page<Cuenta> filtraCuentas(Long tipo_cuenta_id, String estado, Pageable pageable) {
+		return suscripcionRepository.filtraCuentas(tipo_cuenta_id, estado, pageable);
+	}
+	/*
 	@Override
 	public List<Cuenta> filtraCuentas(Long tipo_cuenta_id, String estado) {
 		return suscripcionRepository.filtraCuentas(tipo_cuenta_id, estado);
 	}
+	*/
 }

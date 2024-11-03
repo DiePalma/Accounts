@@ -1,8 +1,11 @@
 package com.demo.accounts.serviceImpl;
 
-import java.util.List;
+
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,8 +23,8 @@ public class CuentaServiceImpl implements CuentaService{
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<Cuenta> listCuentas() {
-		return (List<Cuenta>) cuentaRepository.findAll();
+	public Page<Cuenta> listCuentas(Pageable pageable) {
+		return (Page<Cuenta>) cuentaRepository.findAll(pageable);
 	}
 
 	@Override
@@ -33,15 +36,15 @@ public class CuentaServiceImpl implements CuentaService{
 
 	@Override
 	@Transactional
-	public void delete(Cuenta cuenta) {
+	public void delete(Long id) {
 		// TODO Auto-generated method stub
-		cuentaRepository.delete(cuenta);
+		cuentaRepository.deleteById(id);
 	}
 
 	@Override
 	@Transactional(readOnly=true)
-	public Cuenta findCuenta(Cuenta cuenta) {
-		return cuentaRepository.findById(cuenta.getId()).orElse(null);
+	public Optional<Cuenta> findById(Long id) {
+		return cuentaRepository.findById(id);
 	}
 
 	

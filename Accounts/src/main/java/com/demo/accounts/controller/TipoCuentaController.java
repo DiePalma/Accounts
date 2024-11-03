@@ -2,9 +2,13 @@ package com.demo.accounts.controller;
 
 
 
-import java.util.List;
+
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.demo.accounts.model.Cuenta;
 import com.demo.accounts.model.TipoCuenta;
-import com.demo.accounts.repository.TipoCuentaRepository;
+
 import com.demo.accounts.service.TipoCuentaService;
 
 @CrossOrigin
@@ -26,45 +30,72 @@ import com.demo.accounts.service.TipoCuentaService;
 @RequestMapping("/tipocuenta")
 public class TipoCuentaController {
 
-	@Autowired
-	private TipoCuentaRepository tipoCuentaRepository;
+
 	
 	@Autowired
 	private TipoCuentaService tipoCuentaService;
 	
-	public TipoCuentaController (TipoCuentaRepository tipoCuentaRepository) {
-		this.tipoCuentaRepository= tipoCuentaRepository;
+	public TipoCuentaController ( TipoCuentaService tipoCuentaService) {
+
+		this.tipoCuentaService = tipoCuentaService;
 	}
 
 	@GetMapping("")
-	public List<TipoCuenta> getTiposCuenta(){
-		return tipoCuentaRepository.findAll();
+	public ResponseEntity<Page<TipoCuenta> >getTiposCuenta(Pageable pageable){
+		Page<TipoCuenta> tipos = tipoCuentaService.listTiposCuenta(pageable);
+		if(tipos.isEmpty()) {
+			return ResponseEntity.noContent().build();
+		}
+		return ResponseEntity.ok(tipos);
 	}
 	
 	@GetMapping("/{id}")
-	public TipoCuenta getTipoCuenta(@PathVariable Long id) {
-		return tipoCuentaRepository.findById(id).orElseThrow(RuntimeException::new);
+	public ResponseEntity<Optional<TipoCuenta>> getTipoCuenta(@PathVariable Long id) {
+		Optional<TipoCuenta> tipoCuenta = tipoCuentaService.findById(id);
+		if(tipoCuenta!=null) {
+			return ResponseEntity.ok(tipoCuenta);
+		}else {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+		}
+		
 	}
-	
+	//Probando ResponseEntity y Page
 	@GetMapping("/{id}/{estado}")
-	public List<Cuenta> filtraCuentasDisponibles(@PathVariable Long id, @PathVariable String estado) {
-		System.out.println(estado);
+	public ResponseEntity<Page<Cuenta>> filtraCuentasDisponibles(@PathVariable Long id, @PathVariable String estado, Pageable pageable) {
+		Page<Cuenta> filtrados = tipoCuentaService.filtraCuentas(id, estado, pageable);
+		if(filtrados.isEmpty()) {
+			return ResponseEntity.noContent().build();
+			
+		}
+		return ResponseEntity.ok(filtrados);
+		/*codigo antiguo:
+		 * System.out.println(estado);
 		return tipoCuentaService.filtraCuentas(id, estado);
+		*/
 	}
 	
 	@PostMapping("/nuevo")
-	public TipoCuenta createTipoCuenta(@RequestBody TipoCuenta tipoCuenta) {
-		return tipoCuentaRepository.save(tipoCuenta);
+	public ResponseEntity<TipoCuenta> createTipoCuenta(@RequestBody TipoCuenta tipoCuenta) {
+		tipoCuentaService.save(tipoCuenta);
+		return new ResponseEntity<TipoCuenta>(tipoCuenta, HttpStatus.CREATED);
 	}
+	
 	@PutMapping("/{id}")
-	public TipoCuenta updateTipoCuenta(@RequestBody TipoCuenta tipoCuenta, @PathVariable Long id) {
-		return tipoCuentaRepository.findById(id).map(tipo ->{
-			tipo.setNombre(tipoCuenta.getNombre());
-			return tipoCuentaRepository.save(tipo);
-		}).orElseGet(()->{
-			tipoCuenta.setId(id);
-			return tipoCuentaRepository.save(tipoCuenta);
-		});
+	public ResponseEntity<TipoCuenta> updateTipoCuenta(@RequestBody TipoCuenta tipoCuentaUpdated, @PathVariable Long id) {
+		return tipoCuentaService.findById(id)
+				.map(tipoCuenta->{
+					tipoCuenta.setNombre(tipoCuentaUpdated.getNombre());
+					tipoCuentaService.save(tipoCuenta);
+					return ResponseEntity.ok(tipoCuenta);
+				}).orElseGet(()->{
+					tipoCuentaUpdated.setId(id);
+					
+
+					tipoCuentaService.save(tipoCuentaUpdated);
+					return new ResponseEntity<TipoCuenta>(tipoCuentaUpdated, HttpStatus.CREATED);
+				});
+		
+		
 	}
 	
 	

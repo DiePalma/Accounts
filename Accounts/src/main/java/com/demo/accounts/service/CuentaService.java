@@ -1,18 +1,22 @@
 package com.demo.accounts.service;
 
-import java.util.List;
+
+import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import com.demo.accounts.model.Cuenta;
 
 public interface CuentaService {
 
-	public List<Cuenta>listCuentas();
+	public Page<Cuenta>listCuentas(Pageable pageable);
 	
 	public void save(Cuenta cuenta);
 	
-	public void delete(Cuenta cuenta);
+	public void delete(Long id);
 	
-	public Cuenta findCuenta(Cuenta cuenta);
+	public Optional<Cuenta> findById(Long id);
 	
 	//public Cuenta subscribe(Long cuentaId, Long tipoCuentaId);
 	

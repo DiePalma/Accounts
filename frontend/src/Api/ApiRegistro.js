@@ -8,7 +8,20 @@ const apiSuscripcion = axios.create({
     }
 });
 
-
+export const fetchSuscripciones = async(page = 0, pageSize = 5)=>{
+  try {
+    const response = await apiSuscripcion.get("",{
+      params:{
+        page: page,
+        size: pageSize
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error obteniendo suscripciones paginadas ', error);
+    throw error;
+  }
+}
 export const createSuscripcion = async (suscripcion) =>{
   try {
    
