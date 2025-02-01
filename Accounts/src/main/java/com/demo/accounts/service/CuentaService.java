@@ -18,7 +18,7 @@ public interface CuentaService {
 	
 	public Optional<Cuenta> findById(Long id);
 	
-	//public Cuenta subscribe(Long cuentaId, Long tipoCuentaId);
+	
 	
 	
 ;}
